@@ -35,8 +35,10 @@ export class Store extends EventTarget {
       for(const [id,r] of Object.entries(this.records)){
         if(!r.pending||r.conflict)continue;
         const edit=r.edit;
-        const {data:written,error:e}=await this.client.rpc('nox_write',{item_id:id,item_kind:r.kind,item_payload:r.payload,item_deleted:!!r.deleted,expected_revision:r.revision});
+        const {data:response,error:e}=await this.client.rpc('nox_write',{item_id:id,item_kind:r.kind,item_payload:r.payload,item_deleted:!!r.deleted,expected_revision:r.revision});
         if(e){if(e.code==='PT409'){const {data:remote}=await this.client.from('nox_items').select('*').eq('id',id).single();if(remote)this.records[id]={...this.records[id],conflict:remote};continue;}throw e;}
+        const written=Array.isArray(response)?response[0]:response;
+        if(!written||!Number.isFinite(written.revision))throw new Error('서버 저장 결과를 확인할 수 없습니다.');
         const current=this.records[id];this.records[id]=current.edit===edit?{...written,pending:false}:{...current,revision:written.revision};
       }
       this.conflicts=Object.values(this.records).filter(x=>x.conflict);

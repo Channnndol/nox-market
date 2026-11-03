@@ -20,7 +20,7 @@ let ledger={};try{ledger=JSON.parse(await readFile('.agent/delivery.json','utf8'
 let stopped=false;const previous=new Map();
 process.on('SIGINT',()=>{stopped=true;});process.on('SIGTERM',()=>{stopped=true;});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-const write=async(id,kind,payload,revision=0,deleted=false)=>{const {data,error}=await client.rpc('nox_write',{item_id:id,item_kind:kind,item_payload:payload,item_deleted:deleted,expected_revision:revision});if(error)throw error;return data;};
+const write=async(id,kind,payload,revision=0,deleted=false)=>{const {data,error}=await client.rpc('nox_write',{item_id:id,item_kind:kind,item_payload:payload,item_deleted:deleted,expected_revision:revision});if(error)throw error;const row=Array.isArray(data)?data[0]:data;if(!row||!Number.isFinite(row.revision))throw new Error('Invalid server write response');return row;};
 async function persist(){await writeFile('.agent/delivery.tmp',JSON.stringify(ledger,null,2));await rename('.agent/delivery.tmp','.agent/delivery.json');}
 async function sendPhoto(buffer,caption){const body=new FormData();body.set('chat_id',process.env.TELEGRAM_CHAT_ID);body.set('caption',caption.slice(0,1000));body.set('photo',new Blob([buffer],{type:'image/png'}),'nox-alert.png');const r=await fetch(telegramBase+'/sendPhoto',{method:'POST',body,signal:AbortSignal.timeout(20000)});const result=await r.json();if(!r.ok||!result.ok)throw new Error('텔레그램이 전송을 수락하지 않았습니다. 봇 시작 여부와 대상 채팅을 확인하세요.');}
 async function heartbeat(records){const r=records.find(x=>x.id===identity);await write(identity,'agent',{lastSeen:Date.now(),status:'running',version:'0.1.0'},r?.revision??0);}
@@ -47,8 +47,10 @@ while(!stopped){
         if(ledger[eventId])continue;
         // CAS claims the alert across multiple agents before any external message is sent.
         const at=Date.now(),event={at,symbol:a.market.symbol,status:'전송 준비',message:a.note||''};
-        const {data:eventRecord,error:claimError}=await client.rpc('nox_claim_alert',{alert_id:record.id,expected_revision:record.revision,event_id:eventId,event_payload:event});
+        const {data:claimResponse,error:claimError}=await client.rpc('nox_claim_alert',{alert_id:record.id,expected_revision:record.revision,event_id:eventId,event_payload:event});
         if(claimError)throw claimError;
+        const eventRecord=Array.isArray(claimResponse)?claimResponse[0]:claimResponse;
+        if(!eventRecord||!Number.isFinite(eventRecord.revision))throw new Error('Invalid claim response');
         ledger[eventId]={state:'preparing',at};await persist();
         try{
           const rows=await candles(a.market,a.interval,200);
