@@ -1,5 +1,7 @@
 # NOX Market
 
+[웹사이트 열기](https://channnndol.github.io/nox-market/) · [연결 안내](https://channnndol.github.io/nox-market/setup.html)
+
 다크 테마의 개인용 시장 워크스페이스. GitHub Pages에 배포하는 웹 화면과 Windows PC에서 실행하는 텔레그램 알림 프로그램입니다.
 
 ## 현재 지원 범위
