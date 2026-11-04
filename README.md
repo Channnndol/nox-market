@@ -6,23 +6,31 @@
 
 ## 현재 지원 범위
 
-| 기능 | v0.1 |
+| 기능 | v0.2 |
 | --- | --- |
 | 업비트 원화 현물 | 공개 캔들 + 실시간 체결 WebSocket |
 | 바이낸스 USDT 현물 / USDT 무기한 선물 | 공개 캔들 + 실시간 캔들 WebSocket |
 | 바이빗 USDT 현물 / USDT 무기한 선물 | 공개 캔들 + 실시간 캔들 WebSocket |
-| 차트 도구 | 수평선, 추세선, 사각형, 메모, 색상 변경, 삭제, 실행 취소/다시 실행 |
-| 지표 | 거래량, 단순이동평균 20/60 |
-| 캡처 | 선 포함 PNG, 이미지 복사, 지원 기기의 파일 공유 메뉴 |
-| 동기화 | 무료 Supabase 연결 후 동일 계정의 관심종목/선/알림을 약 15초 간격으로 동기화 |
+| 기본 차트 | 공식 무료 TradingView Advanced Chart Widget. 코인 현물/USDT 무기한, 다크 테마, 그리기 도구, 지표 메뉴, 시간봉, 이미지 버튼 |
+| NOX 차트 | 기존 차트로 전환 가능. 수평선, 추세선, 사각형, 메모, 색상, 삭제, 실행 취소/다시 실행, 거래량, MA 20/60 |
+| 캡처 | TradingView: 위젯의 이미지 버튼으로 수동 저장/공유. NOX 차트: 선 포함 PNG, 이미지 복사, 지원 기기의 파일 공유 메뉴 |
+| 동기화 | 무료 Supabase 연결 후 관심종목/NOX 선/알림을 약 15초 간격으로 동기화. **TradingView 위젯의 선·지표·시간봉 설정은 제외** |
 | 알림 | PC 감시 프로그램이 약 15초 간격으로 체결가를 조회. 목표 이상/이하, 상향/하향 돌파, 추세선 기준. 1회 발생 후 비활성화 |
 | 알림 이미지 | 최근 100봉과 저장된 드로잉을 PC에서 별도 렌더링해 텔레그램 첨부 |
-| 한국/미국 주식·지수 | **외부 TradingView 위젯 보기만 제공.** 종목/거래소에 따라 표시 제한 또는 지연. 직접 데이터 연동과 NOX 드로잉 저장·캡처·알림 미지원 |
+| 한국/미국 주식·지수 | **공식 TradingView 위젯 제공.** 종목/거래소에 따라 표시 제한 또는 지연. 직접 데이터 연동과 NOX 드로잉 저장·캡처·알림 미지원. 위젯 자체 이미지 버튼은 이용 가능 |
 | USD/KRW | Frankfurter의 **일별 기준환율**. 실시간/분봉/환율 알림 미지원 |
 
 한국 주식 전체의 무료 실시간 직접 연결은 확보되지 않았습니다. KRX 종목이 외부 위젯에서 표시되지 않을 수 있습니다. 한국 주식·미국 주식·지수·환율에 코인과 같은 기능을 제공하는 완성품이 아니라, 직접 연결된 코인 기능을 중심으로 한 첫 버전입니다.
 
 바이낸스·바이빗의 코인 증거금/만기 선물/옵션은 이 버전에 포함하지 않습니다. 마크 가격·지수 가격·펀딩 비율은 별도 표시하며 알림 판단은 **체결가**만 사용합니다.
+
+### 두 차트의 사용 방법
+
+사이트를 열면 코인은 **TradingView**로 표시됩니다. 종목은 NOX의 검색창·관심종목에서 바꾸며, 위젯 내부 종목 변경은 잠가 알림 대상과 다르게 표시되는 것을 방지합니다. 업비트 `KRW-BTC`는 `UPBIT:BTCKRW`, 바이낸스·바이빗 무기한은 `BTCUSDT.P` 형식으로 연결합니다. 거래소 상장 종목이라도 위젯에서는 제공되지 않을 수 있습니다.
+
+TradingView 왼쪽 도구에서 선을 그리고 위쪽 메뉴에서 지표와 시간봉을 고릅니다. **위젯 종목/보기 변경 시 그린 선이 유지되거나 기기 간 동기화된다고 보장하지 않습니다.** 기존에 저장한 NOX 선은 삭제하지 않으며, **NOX 차트** 버튼으로 전환해 계속 사용합니다.
+
+상단 가격과 하단의 `NOX 시세` 연결 상태는 별도 거래소 API 기준이며 위젯의 연결 상태를 뜻하지 않습니다. 이 API가 실패해도 위젯은 독립적으로 로드됩니다. 가격 알림은 선택된 NOX 종목의 체결가를 PC 프로그램이 감시하며, 알림 이미지 시간봉은 알림 생성 화면에서 따로 정합니다. 위젯의 시간봉·지표·선과 자동 연동되지 않습니다. PC 알림 이미지는 기존 NOX 드로잉만 포함합니다.
 
 ## 실행
 
@@ -70,6 +78,7 @@ pnpm dev
 ## 검증 상태
 
 - Node 단위 테스트: 가격 조건/추세선 계산/데이터 정규화/동기화 충돌/PNG 생성.
+- 위젯 종목 변환: 업비트 원화 현물, 바이낸스·바이빗 현물/무기한, 시간봉 변환, 잘못된 상품 거부, 코인 위젯 종목 변경 잠금.
 - 업비트·바이낸스 현물/무기한·바이빗 현물/무기한 REST 캔들 및 브라우저 Origin에 대한 CORS 응답 확인.
 - Frankfurter 실제 일별 환율 응답 확인.
 - 업비트·바이낸스 현물/무기한·바이빗 현물/무기한 WebSocket 이벤트를 Node 환경에서 실제 수신 확인.
@@ -81,6 +90,7 @@ pnpm dev
 
 - [TradingView Lightweight Charts](https://github.com/tradingview/lightweight-charts): Apache 2.0. 원저작권/NOTICE 및 차트 링크·로고 표시 유지.
 - [TradingView 위젯의 시세 제한](https://www.tradingview.com/widget-docs/faq/data/): 위젯에서 데이터를 추출하지 않습니다.
+- [공식 무료 Advanced Chart Widget](https://www.tradingview.com/widget-docs/widgets/charts/advanced-chart/): 공식 삽입 스크립트를 사용하며 위젯의 브랜드·출처 표시를 유지합니다. Advanced Charts 라이브러리를 배포하지 않습니다.
 - [Upbit 요청 제한](https://docs.upbit.com/kr/reference/rate-limits): 브라우저 REST 요청은 최소 10.1초 간격으로 직렬화합니다.
 - [Binance market data](https://developers.binance.com/en/docs/products/spot/faqs/market_data_only), [Bybit API](https://bybit-exchange.github.io/docs/v5/market/kline), [Frankfurter](https://frankfurter.dev/).
 - [Supabase 무료 요금제](https://supabase.com/pricing), [Telegram Bot API](https://core.telegram.org/bots/api).
